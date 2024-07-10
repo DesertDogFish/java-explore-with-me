@@ -17,8 +17,9 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 public class StatsServiceController {
-    private final StatsService statsService;
     private static final String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
+    private final StatsService statsService;
+
     @GetMapping("/stats")
     @ResponseStatus(HttpStatus.OK)
     public List<ViewStatsDto> get(@RequestParam(name = "start") @DateTimeFormat(pattern = DATE_TIME_PATTERN) LocalDateTime start,
