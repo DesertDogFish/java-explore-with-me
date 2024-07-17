@@ -9,6 +9,7 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.explorewithme.dto.EndpointHitDto;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
@@ -31,12 +32,23 @@ public class StatsServiceClient extends BaseClient {
                                         LocalDateTime end,
                                         List<String> uris,
                                         Boolean unique) {
-        Map<String, Object> parameters = Map.of(
-                "start", start,
-                "end", end,
-                "uris", uris,
-                "unique", unique
-        );
-        return get("/stats?from={from}&size={size}&uris={uris}&unique={unique}", parameters);
+        Map<String, Object> parameters;
+        DateTimeFormatter pattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String formattedStart = start.format(pattern);
+        String formattedEnd = end.format(pattern);
+
+        if (uris == null) {
+            parameters = Map.of(
+                    "start", formattedStart,
+                    "end", formattedEnd,
+                    "unique", unique);
+            return get("/stats?start={start}&end={end}&unique={unique}", parameters);
+        }
+        parameters = Map.of(
+                "start", formattedStart,
+                "end", formattedEnd,
+                "uris", String.join(",", uris),
+                "unique", unique);
+        return get("/stats?start={start}&end={end}&unique={unique}&uris={uris}", parameters);
     }
 }
