@@ -18,6 +18,7 @@ public interface NewEventDtoMapper {
     @Mapping(target = "state", expression = "java(mapToPendingState(newEventDto))")
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "category", source = "category")
+    @Mapping(target = "location", source = "location")
     @Mapping(target = "createdOn", expression = "java(java.time.LocalDateTime.now())")
     @Mapping(target = "description", source = "newEventDto.description")
     @Mapping(target = "paid", source = "newEventDto.paid", defaultValue = "false")

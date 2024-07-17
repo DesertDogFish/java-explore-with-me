@@ -11,6 +11,6 @@ import javax.validation.constraints.Size;
 @AllArgsConstructor
 public class CategoryShortDto {
     @NotBlank
-    @Size(max = 100)
+    @Size(min = 1, max = 50)
     private String name;
 }
