@@ -1,7 +1,6 @@
 package ru.practicum.explorewithme.statsservice.controller;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -13,7 +12,6 @@ import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class StatsServiceController {
@@ -26,14 +24,19 @@ public class StatsServiceController {
                                   @RequestParam(name = "end") @DateTimeFormat(pattern = DATE_TIME_PATTERN) LocalDateTime end,
                                   @RequestParam(required = false) List<String> uris,
                                   @RequestParam(defaultValue = "false") Boolean unique) {
-        log.info("Stats");
+        validateDates(start, end);
         return statsService.get(start, end, uris, unique);
     }
 
     @PostMapping("/hit")
     @ResponseStatus(HttpStatus.CREATED)
     public EndpointHitDto hit(@RequestBody @Valid EndpointHitDto endpointHitDto) {
-        log.info("Hit");
         return statsService.post(endpointHitDto);
+    }
+
+    private void validateDates(LocalDateTime start, LocalDateTime end) {
+        if (start.isAfter(end)) {
+            throw new IllegalArgumentException("Start date should be after end date");
+        }
     }
 }
