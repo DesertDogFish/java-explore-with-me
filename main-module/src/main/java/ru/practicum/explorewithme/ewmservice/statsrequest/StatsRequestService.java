@@ -18,7 +18,7 @@ import java.util.Objects;
 public class StatsRequestService {
     private final ObjectMapper objectMapper;
     private final StatsServiceClient statsServiceClient;
-    
+
     public List<ViewStatsDto> getViewStatsDtoList(LocalDateTime rangeStart, LocalDateTime rangeEnd, List<String> uris, boolean unique) {
         ResponseEntity<Object> stats = statsServiceClient.stats(rangeStart, rangeEnd, uris, unique);
         List<ViewStatsDto> statisticDtos;
