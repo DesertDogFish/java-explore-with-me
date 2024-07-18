@@ -1,10 +1,7 @@
 package ru.practicum.explorewithme.ewmservice.compilation.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.explorewithme.dto.ViewStatsDto;
@@ -22,7 +19,7 @@ import ru.practicum.explorewithme.ewmservice.event.mapper.EventShortDtoMapper;
 import ru.practicum.explorewithme.ewmservice.event.model.Event;
 import ru.practicum.explorewithme.ewmservice.exception.NotFoundException;
 import ru.practicum.explorewithme.ewmservice.request.service.RequestService;
-import ru.practicum.explorewithme.statsclient.StatsServiceClient;
+import ru.practicum.explorewithme.ewmservice.statsrequest.StatsRequestService;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -32,15 +29,14 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 @Service
 public class CompilationServiceImpl implements CompilationService {
-
     private final CompilationDao compilationDao;
     private final EventDao eventDao;
-    private final StatsServiceClient statsServiceClient;
     private final RequestService requestService;
     private final NewCompilationDtoMapper newCompilationDtoMapper;
     private final EventShortDtoMapper eventShortDtoMapper;
     private final CompilationDtoMapper compilationDtoMapper;
-    private final ObjectMapper objectMapper;
+    private final StatsRequestService statsRequestService;
+
 
     private static List<Long> getEventsId(List<Event> events) {
         return events.stream()
@@ -183,14 +179,7 @@ public class CompilationServiceImpl implements CompilationService {
                 .map(id -> "/events/" + id)
                 .collect(Collectors.toList());
 
-        ResponseEntity<Object> stats = statsServiceClient.stats(rangeStart, rangeEnd, uris, false);
-        List<ViewStatsDto> statisticDtos;
-        if (stats.getStatusCode().is2xxSuccessful()) {
-            statisticDtos = objectMapper.convertValue(stats.getBody(), new TypeReference<>() {
-            });
-        } else {
-            throw new RuntimeException(Objects.requireNonNull(stats.getBody()).toString());
-        }
+        final List<ViewStatsDto> statisticDtos = statsRequestService.getViewStatsDtoList(rangeStart, rangeEnd, uris, false);
 
         return statisticDtos.stream()
                 .collect(Collectors.toMap(

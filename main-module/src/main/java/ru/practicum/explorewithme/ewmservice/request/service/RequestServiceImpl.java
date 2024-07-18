@@ -86,53 +86,57 @@ public class RequestServiceImpl implements RequestService {
     @Transactional
     public EventRequestStatusUpdateResult updateRequestStatus(
             EventRequestStatusUpdateRequest dto, Long userId, Long eventId) {
-
         getUserOrThrowNotFoundException(userId);
-        Event event = getEventOrThrowNotFoundException(eventId);
-        checkIfUserIsEventOwnerAndThrowException(event, userId);
-
-        if (dto.getStatus().equals(RequestStatus.CONFIRMED)) {
-            if (event.getParticipantLimit() != 0) {
-                Integer countRequestsLimit = requestDao.countAllByEventIdAndStatus(event.getId(),
-                        RequestStatus.CONFIRMED) + dto.getRequestIds().size();
-
-                if (countRequestsLimit > event.getParticipantLimit()) {
-                    throw new ConflictException("The participant limit has been reached");
-                }
-                List<Request> requests = updateRequestStatus(dto, eventId);
-
-                EventRequestStatusUpdateResult result = EventRequestStatusUpdateResult.builder()
-                        .confirmedRequests(requests.stream()
-                                .map(participationRequestDtoMapper::toDto)
-                                .collect(Collectors.toList())).build();
-
-                if (countRequestsLimit.equals(event.getParticipantLimit())) {
-                    List<Request> otherRequests = requestDao.findAllByEventIdAndStatus(eventId, RequestStatus.PENDING);
-                    otherRequests.forEach(request -> request.setStatus(RequestStatus.REJECTED));
-                    requestDao.saveAll(otherRequests);
-
-                    result.setRejectedRequests(otherRequests.stream()
-                            .map(participationRequestDtoMapper::toDto)
-                            .collect(Collectors.toList()));
-
-                }
-                return result;
-            } else {
-                List<Request> requests = updateRequestStatus(dto, eventId);
-                return EventRequestStatusUpdateResult.builder()
-                        .confirmedRequests(requests.stream()
-                                .map(participationRequestDtoMapper::toDto)
-                                .collect(Collectors.toList())).build();
-            }
+        if (dto.getStatus() == RequestStatus.CONFIRMED) {
+            Event event = getEventOrThrowNotFoundException(eventId);
+            checkIfUserIsEventOwnerAndThrowException(event, userId);
+            return processEventRequestStatusConfirmUpdateRequest(dto, event);
         } else {
-            List<Request> rejectedRequest = updateRequestStatus(dto, eventId);
-
-            return EventRequestStatusUpdateResult.builder()
-                    .rejectedRequests(rejectedRequest.stream()
-                            .map(participationRequestDtoMapper::toDto)
-                            .collect(Collectors.toList()))
-                    .build();
+            return processEventRequestStatusRejectUpdateRequest(dto, eventId);
         }
+    }
+
+    private EventRequestStatusUpdateResult processEventRequestStatusRejectUpdateRequest(EventRequestStatusUpdateRequest dto, Long eventId) {
+        List<Request> rejectedRequest = updateRequestStatus(dto.getRequestIds(), eventId, RequestStatus.REJECTED);
+        return EventRequestStatusUpdateResult.builder()
+                .rejectedRequests(rejectedRequest.stream()
+                        .map(participationRequestDtoMapper::toDto)
+                        .collect(Collectors.toList()))
+                .build();
+    }
+
+    private EventRequestStatusUpdateResult processEventRequestStatusConfirmUpdateRequest(EventRequestStatusUpdateRequest dto, Event event) {
+        if (event.getParticipantLimit() != 0) {
+            Integer countRequestsLimit = requestDao.countAllByEventIdAndStatus(event.getId(),
+                    RequestStatus.CONFIRMED) + dto.getRequestIds().size();
+            checkIfParticipantLimitIsBreachedAndThrowException(event, countRequestsLimit);
+
+            EventRequestStatusUpdateResult result = updateEventRequestsStatusToConfirmed(dto.getRequestIds(), event.getId());
+
+            if (countRequestsLimit.equals(event.getParticipantLimit())) {
+                result.setRejectedRequests(updateEventRequestsStatusToRejected(event.getId()).stream()
+                        .map(participationRequestDtoMapper::toDto)
+                        .collect(Collectors.toList()));
+            }
+            return result;
+        } else {
+            return updateEventRequestsStatusToConfirmed(dto.getRequestIds(), event.getId());
+        }
+    }
+
+    private List<Request> updateEventRequestsStatusToRejected(Long eventId) {
+        List<Request> otherRequests = requestDao.findAllByEventIdAndStatus(eventId, RequestStatus.PENDING);
+        otherRequests.forEach(request -> request.setStatus(RequestStatus.REJECTED));
+        requestDao.saveAll(otherRequests);
+        return otherRequests;
+    }
+
+    private EventRequestStatusUpdateResult updateEventRequestsStatusToConfirmed(List<Long> requestIds, Long eventId) {
+        List<Request> requests = updateRequestStatus(requestIds, eventId, RequestStatus.CONFIRMED);
+        return EventRequestStatusUpdateResult.builder()
+                .confirmedRequests(requests.stream()
+                        .map(participationRequestDtoMapper::toDto)
+                        .collect(Collectors.toList())).build();
     }
 
     @Override
@@ -147,17 +151,23 @@ public class RequestServiceImpl implements RequestService {
                 );
     }
 
-    private List<Request> updateRequestStatus(EventRequestStatusUpdateRequest dto, Long eventId) {
-        List<Request> requests = requestDao.findAllByIdInAndEventId(dto.getRequestIds(),
+    private List<Request> updateRequestStatus(List<Long> requestIds, Long eventId, RequestStatus requestStatus) {
+        List<Request> requests = requestDao.findAllByIdInAndEventId(requestIds,
                 eventId);
         requests.forEach(request -> {
-            if (!request.getStatus().equals(RequestStatus.PENDING)) {
+            if (request.getStatus() != RequestStatus.PENDING) {
                 throw new ConflictException("Request must have status PENDING");
             }
-            request.setStatus(dto.getStatus());
+            request.setStatus(requestStatus);
         });
         requestDao.saveAll(requests);
         return requests;
+    }
+
+    private void checkIfParticipantLimitIsBreachedAndThrowException(Event event, Integer requestLimit) {
+        if (requestLimit > event.getParticipantLimit()) {
+            throw new ConflictException("The participant limit has been reached");
+        }
     }
 
     private void checkIfUserIsEventOwnerAndThrowException(Event event, Long userId) {

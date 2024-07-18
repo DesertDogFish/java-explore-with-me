@@ -1,11 +1,8 @@
 package ru.practicum.explorewithme.ewmservice.event.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.explorewithme.dto.EndpointHitDto;
@@ -30,9 +27,9 @@ import ru.practicum.explorewithme.ewmservice.location.service.LocationService;
 import ru.practicum.explorewithme.ewmservice.request.dao.RequestDao;
 import ru.practicum.explorewithme.ewmservice.request.model.enums.RequestStatus;
 import ru.practicum.explorewithme.ewmservice.request.service.RequestService;
+import ru.practicum.explorewithme.ewmservice.statsrequest.StatsRequestService;
 import ru.practicum.explorewithme.ewmservice.user.dao.UserDao;
 import ru.practicum.explorewithme.ewmservice.user.model.User;
-import ru.practicum.explorewithme.statsclient.StatsServiceClient;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
@@ -52,8 +49,7 @@ public class EventServiceImpl implements EventService {
     private final NewEventDtoMapper newEventDtoMapper;
     private final EventFullDtoMapper eventFullDtoMapper;
     private final EventShortDtoMapper eventShortDtoMapper;
-    private final StatsServiceClient statsServiceClient;
-    private final ObjectMapper objectMapper;
+    private final StatsRequestService statsRequestService;
 
     private static List<Long> extractEventsId(Page<Event> events) {
         return events.stream()
@@ -285,7 +281,7 @@ public class EventServiceImpl implements EventService {
         Map<Long, Integer> countRequestsByEventId = requestService.countConfirmedRequests(eventsIds);
         Map<Long, Long> statisticMap = getEventStatisticMap(rangeStart, rangeEnd, eventsIds);
 
-        statsServiceClient.hit(EndpointHitDto.builder()
+        statsRequestService.hit(EndpointHitDto.builder()
                 .app("main")
                 .ip(request.getRemoteAddr())
                 .uri(request.getRequestURI())
@@ -315,7 +311,7 @@ public class EventServiceImpl implements EventService {
         Map<Long, Long> statisticMap = getEventStatisticMap(LocalDateTime.now().minusYears(100),
                 LocalDateTime.now().plusYears(100), List.of(eventId));
 
-        statsServiceClient.hit(EndpointHitDto.builder()
+        statsRequestService.hit(EndpointHitDto.builder()
                 .app("main")
                 .uri("/events/" + eventId)
                 .ip(request.getRemoteAddr())
@@ -329,14 +325,7 @@ public class EventServiceImpl implements EventService {
                 .map(id -> "/events/" + id)
                 .collect(Collectors.toList());
 
-        ResponseEntity<Object> stats = statsServiceClient.stats(rangeStart, rangeEnd, uris, true);
-        List<ViewStatsDto> statisticDtos;
-        if (stats.getStatusCode().is2xxSuccessful()) {
-            statisticDtos = objectMapper.convertValue(stats.getBody(), new TypeReference<>() {
-            });
-        } else {
-            throw new RuntimeException(Objects.requireNonNull(stats.getBody()).toString());
-        }
+        final List<ViewStatsDto> statisticDtos = statsRequestService.getViewStatsDtoList(rangeStart, rangeEnd, uris, true);
 
         return statisticDtos.stream()
                 .collect(Collectors.toMap(
