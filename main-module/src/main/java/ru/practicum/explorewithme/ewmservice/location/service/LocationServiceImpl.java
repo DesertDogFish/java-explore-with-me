@@ -12,7 +12,7 @@ import ru.practicum.explorewithme.ewmservice.location.dto.NewLocationDto;
 import ru.practicum.explorewithme.ewmservice.location.dto.UpdateLocationDto;
 import ru.practicum.explorewithme.ewmservice.location.mapper.LocationDtoMapper;
 import ru.practicum.explorewithme.ewmservice.location.mapper.LocationFullDtoMapper;
-import ru.practicum.explorewithme.ewmservice.location.mapper.UpdateLocationDtoMapper;
+import ru.practicum.explorewithme.ewmservice.location.mapper.NewLocationDtoMapper;
 import ru.practicum.explorewithme.ewmservice.location.model.Location;
 
 import java.util.List;
@@ -22,7 +22,7 @@ import java.util.List;
 public class LocationServiceImpl implements LocationService {
     private final LocationDao locationDao;
     private final LocationDtoMapper locationDtoMapper;
-    private final UpdateLocationDtoMapper updateLocationDtoMapper;
+    private final NewLocationDtoMapper newLocationDtoMapper;
     private final LocationFullDtoMapper locationFullDtoMapper;
 
     @Override
@@ -38,7 +38,7 @@ public class LocationServiceImpl implements LocationService {
     @Override
     @Transactional
     public LocationFullDto save(NewLocationDto dto) {
-        Location location = updateLocationDtoMapper.toModel(dto);
+        Location location = newLocationDtoMapper.toModel(dto);
         return locationFullDtoMapper.toDtoList(locationDao.save(location));
     }
 

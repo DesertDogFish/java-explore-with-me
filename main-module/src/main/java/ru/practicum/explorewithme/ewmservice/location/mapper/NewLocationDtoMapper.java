@@ -5,6 +5,6 @@ import ru.practicum.explorewithme.ewmservice.location.dto.NewLocationDto;
 import ru.practicum.explorewithme.ewmservice.location.model.Location;
 
 @Mapper(componentModel = "spring")
-public interface UpdateLocationDtoMapper {
+public interface NewLocationDtoMapper {
     Location toModel(NewLocationDto newLocationDto);
 }

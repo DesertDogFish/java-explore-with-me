@@ -9,5 +9,6 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface LocationFullDtoMapper {
     LocationFullDto toDtoList(Location location);
+
     List<LocationFullDto> toDtoList(List<Location> location);
 }
