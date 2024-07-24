@@ -166,7 +166,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"annotation\": \"Blanditiis vitae quia. In sequi adipisci. Aut voluptas possimus.\",\r\n    \"category\": 1,\r\n    \"confirmedRequests\": 0,\r\n    \"createdOn\": \"2024-07-19 01:57:38\",\r\n    \"description\": \"Et consectetur ducimus voluptate quia repellendus amet. Assumenda delectus voluptatem doloribus ut quia labore amet. Esse laborum distinctio est et et ut eos odio. Mollitia molestiae omnis.\\n \\rQuis sit magni ea illo maiores. Id cum rerum dolor et voluptas quisquam. Sequi iste magnam nobis voluptate sit iste cupiditate. Aliquam aut nihil sed ut dolor vitae ut sit dignissimos. Sunt ut pariatur sunt temporibus ad ea nisi cupiditate enim.\\n \\rDolor vero repellendus tenetur quaerat cumque minima. Et voluptates iusto incidunt ex magni sint vel. Ut pariatur quia rerum cum unde. Cumque ea ab ducimus sequi consequatur et voluptates consectetur. Repellat eos atque qui ut autem illo sit. Excepturi ea veritatis itaque magni et sint rem deserunt.\",\r\n    \"eventDate\": \"2024-07-19 09:57:38\",\r\n    \"initiator\": {\r\n        \"name\": \"Angela Hudson\",\r\n        \"email\": \"Enola.Runte@gmail.com\"\r\n    },\r\n    \"location\": {\r\n        \"lat\": 598.0,\r\n        \"lon\": 118.0\r\n    },\r\n    \"paid\": false,\r\n    \"participantLimit\": 507,\r\n    \"publishedOn\": null,\r\n    \"requestModeration\": false,\r\n    \"state\": \"PENDING\",\r\n    \"title\": \"Voluptas nam aut. 123\",\r\n    \"views\": 0\r\n}",
+					"raw": "{\r\n    \"annotation\": \"Blanditiis vitae quia. In sequi adipisci. Aut voluptas possimus.\",\r\n    \"category\": 1,\r\n    \"confirmedRequests\": 0,\r\n    \"createdOn\": \"2024-07-19 01:57:38\",\r\n    \"description\": \"Et consectetur ducimus voluptate quia repellendus amet. Assumenda delectus voluptatem doloribus ut quia labore amet. Esse laborum distinctio est et et ut eos odio. Mollitia molestiae omnis.\\n \\rQuis sit magni ea illo maiores. Id cum rerum dolor et voluptas quisquam. Sequi iste magnam nobis voluptate sit iste cupiditate. Aliquam aut nihil sed ut dolor vitae ut sit dignissimos. Sunt ut pariatur sunt temporibus ad ea nisi cupiditate enim.\\n \\rDolor vero repellendus tenetur quaerat cumque minima. Et voluptates iusto incidunt ex magni sint vel. Ut pariatur quia rerum cum unde. Cumque ea ab ducimus sequi consequatur et voluptates consectetur. Repellat eos atque qui ut autem illo sit. Excepturi ea veritatis itaque magni et sint rem deserunt.\",\r\n    \"eventDate\": \"2124-07-19 09:57:38\",\r\n    \"initiator\": {\r\n        \"name\": \"Angela Hudson\",\r\n        \"email\": \"Enola.Runte@gmail.com\"\r\n    },\r\n    \"location\": {\r\n        \"lat\": 598.0,\r\n        \"lon\": 118.0\r\n    },\r\n    \"paid\": false,\r\n    \"participantLimit\": 507,\r\n    \"publishedOn\": null,\r\n    \"requestModeration\": false,\r\n    \"state\": \"PENDING\",\r\n    \"title\": \"Voluptas nam aut. 123\",\r\n    \"views\": 0\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -708,6 +708,184 @@
 						"admin",
 						"locations",
 						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create location 3",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Ответ должен содержать код статуса 201 и данные в формате json\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"    pm.response.to.be.withBody;\r",
+							"    pm.response.to.be.json;\r",
+							"});\r",
+							"pm.test(\"Test locations 'id' field\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData).to.have.property('id');\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n        \"lat\": 10.00,\r\n        \"lon\": 10.01,\r\n        \"name\": \"New location name for find\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/admin/locations",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"admin",
+						"locations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create location 4",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Ответ должен содержать код статуса 201 и данные в формате json\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"    pm.response.to.be.withBody;\r",
+							"    pm.response.to.be.json;\r",
+							"});\r",
+							"pm.test(\"Test locations 'id' field\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData).to.have.property('id');\r",
+							"});\r",
+							"pm.test(\"Test locations 'lat' field\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData).to.have.property('lat');\r",
+							"    pm.expect(jsonData.lat, '\"lat\" must be \"10.0\"').to.eql(10.0);\r",
+							"});\r",
+							"pm.test(\"Test locations 'lon' field\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData).to.have.property('lon');\r",
+							"    pm.expect(jsonData.lon, '\"lon\" must be \"10.0\"').to.eql(10.0);\r",
+							"});\r",
+							"pm.test(\"Test locations 'name' field\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData).to.have.property('name');\r",
+							"    pm.expect(jsonData.name, '\"name\" must be \"New location name for find 2\"').to.eql('New location name for find 2');\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"New location name for find 2\",\r\n    \"lat\": 10.0,\r\n    \"lon\": 10.0\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/admin/locations",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"admin",
+						"locations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Find events by coords and rad",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Ответ должен содержать код статуса 200 и данные в формате json\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"    pm.response.to.be.withBody;\r",
+							"    pm.response.to.be.json;\r",
+							"});\r",
+							"\r",
+							"const source = pm.collectionVariables.get('response');\r",
+							"const target = pm.response.json()[0];\r",
+							"\r",
+							"pm.test(\"Событие должно содержать поля: id..\", function () {\r",
+							"    pm.expect(target).to.have.property('id');\r",
+							"    pm.expect(target).to.have.property('lat');\r",
+							"    pm.expect(target).to.have.property('lon');\r",
+							"    pm.expect(target).to.have.property('name');\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Test list user response\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.length, 'List length must be 1').to.eql(1);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/admin/locations/find?lat=10.00&lon=10.02&radius=2&size=2",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"admin",
+						"locations",
+						"find"
+					],
+					"query": [
+						{
+							"key": "lat",
+							"value": "10.00"
+						},
+						{
+							"key": "lon",
+							"value": "10.02"
+						},
+						{
+							"key": "radius",
+							"value": "2"
+						},
+						{
+							"key": "size",
+							"value": "2"
+						}
 					]
 				}
 			},

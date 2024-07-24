@@ -23,5 +23,5 @@ public interface LocationService {
     List<LocationFullDto> getAll(Integer from, Integer size);
 
     List<LocationFullDto> find(
-            Double lat, Double lon, Double radius);
+            Double lat, Double lon, Double radius, Integer pageSize);
 }

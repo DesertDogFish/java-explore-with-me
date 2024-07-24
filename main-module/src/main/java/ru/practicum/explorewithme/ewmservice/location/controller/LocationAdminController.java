@@ -53,7 +53,8 @@ public class LocationAdminController {
     public List<LocationFullDto> find(
             @RequestParam() Double lat,
             @RequestParam() Double lon,
-            @RequestParam(required = false, defaultValue = "100") Double radius) {
-        return locationService.find(lat, lon, radius);
+            @RequestParam(required = false, defaultValue = "1") Double radius,
+            @RequestParam(required = false, defaultValue = "10") @Positive Integer size) {
+        return locationService.find(lat, lon, radius, size);
     }
 }

@@ -3,6 +3,7 @@ package ru.practicum.explorewithme.ewmservice.location.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.explorewithme.ewmservice.common.DistanceCalculator;
 import ru.practicum.explorewithme.ewmservice.common.PageRequestHelper;
 import ru.practicum.explorewithme.ewmservice.exception.NotFoundException;
 import ru.practicum.explorewithme.ewmservice.location.dao.LocationDao;
@@ -15,7 +16,9 @@ import ru.practicum.explorewithme.ewmservice.location.mapper.LocationFullDtoMapp
 import ru.practicum.explorewithme.ewmservice.location.mapper.NewLocationDtoMapper;
 import ru.practicum.explorewithme.ewmservice.location.model.Location;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -80,9 +83,29 @@ public class LocationServiceImpl implements LocationService {
     }
 
     @Override
-    public List<LocationFullDto> find(Double lat, Double lon, Double radius) {
-        List<Location> locations = locationDao.findLocationByLatAndLonAndRadius(lat, lon, radius);
-        return locationFullDtoMapper.toDtoList(locations);
+    public List<LocationFullDto> find(Double lat, Double lon, Double radius, Integer pageSize) {
+        int from = 0;
+        int batchSize = 100;
+        List<Location> locations = new ArrayList<>();
+        while (true) {
+            List<Location> locationsPage = locationDao.findAll(new PageRequestHelper(from, batchSize, null)).toList();
+            if (locationsPage.isEmpty()) {
+                break;
+            }
+            locationsPage = filterLocationsByRadius(locationsPage, lat, lon, radius);
+            locations.addAll(locationsPage);
+            if (locations.size() >= pageSize) {
+                break;
+            }
+            from += batchSize;
+        }
+        return locationFullDtoMapper.toDtoList(locations.subList(0, Math.min(pageSize, locations.size())));
+    }
+
+    private List<Location> filterLocationsByRadius(List<Location> locations, Double lat, Double lon, Double radius) {
+        return locations.stream()
+                .filter(location -> DistanceCalculator.calculateDistance(lat, lon, location.getLat(), location.getLon()) <= radius)
+                .collect(Collectors.toList());
     }
 
     private Location getLocationOrThrowNotFoundException(Long id) {
