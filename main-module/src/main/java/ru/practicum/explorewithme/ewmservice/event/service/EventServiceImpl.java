@@ -33,7 +33,10 @@ import ru.practicum.explorewithme.ewmservice.user.model.User;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -318,6 +321,20 @@ public class EventServiceImpl implements EventService {
                 .timestamp(LocalDateTime.now()).build());
 
         return eventFullDtoMapper.toDto(event, countRequest, statisticMap.get(eventId));
+    }
+
+    @Override
+    public List<EventShortDto> getEventsByLocationForPublic(Long locationId, Integer from, Integer size) {
+        Page<Event> events = eventDao.findByLocationIdAndState(locationId, EventState.PUBLISHED, new PageRequestHelper(from, size, null));
+        List<Long> eventsIds = extractEventsId(events);
+        Map<Long, Integer> confirmedRequests = requestService.countConfirmedRequests(eventsIds);
+        Map<Long, Long> statisticMap = getEventStatisticMap(LocalDateTime.now().minusYears(100),
+                LocalDateTime.now().plusYears(100), eventsIds);
+        return events.stream()
+                .map(event -> eventShortDtoMapper.toDto(event,
+                        confirmedRequests.get(event.getId()) == null ? 0 : confirmedRequests.get(event.getId()),
+                        statisticMap.get(event.getId())))
+                .collect(Collectors.toList());
     }
 
     private Map<Long, Long> getEventStatisticMap(LocalDateTime rangeStart, LocalDateTime rangeEnd, List<Long> eventsIds) {

@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.lang.Nullable;
+import ru.practicum.explorewithme.ewmservice.common.PageRequestHelper;
 import ru.practicum.explorewithme.ewmservice.event.model.Event;
 import ru.practicum.explorewithme.ewmservice.event.model.enums.EventState;
 
@@ -54,4 +55,6 @@ public interface EventDao extends JpaRepository<Event, Long> {
     List<Event> findAllByIdIn(List<Long> eventIds);
 
     Optional<Event> findByIdAndState(Long eventId, EventState state);
+
+    Page<Event> findByLocationIdAndState(Long locationId, EventState eventState, PageRequestHelper pageRequestHelper);
 }

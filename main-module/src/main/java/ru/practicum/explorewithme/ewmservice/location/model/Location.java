@@ -20,4 +20,6 @@ public class Location {
     private Double lat;
     @Column(name = "lon", nullable = false)
     private Double lon;
+    @Column(name = "name", length = 250)
+    private String name;
 }
